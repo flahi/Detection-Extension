@@ -1,0 +1,50 @@
+/* Universal */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    width: 350px;
+    height: auto;
+    margin: 0;
+    padding: 0;
+}
+
+
+/* Header */
+
+.header {
+    text-align: center;
+    padding: 12px;
+}
+
+#checkBTN {
+    width: 320px;
+    height: 50px;
+    background-color: green;
+    color: white;
+    border: 1px solid green;
+    border-radius: 2px;
+}
+
+
+/* Information Section */
+
+.infoSection {
+    font-size: 12px;
+    color: #797a7a;
+    text-align: center;
+}
+
+.urlSection, .commentSection {
+    border: 1px solid #2f3330;
+    margin: 10px;
+}
+
+.urlSection {
+    width: 320px;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
