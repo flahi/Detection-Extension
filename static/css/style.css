@@ -48,3 +48,14 @@ body {
     overflow-y: hidden;
 }
 
+span.malicious, span.homograph, span.invalid-tld, span.invalid-certificate, span.error {
+    color: red;
+}
+
+span.good {
+    color: green;
+}
+
+span.warning {
+    color: orange;
+}
