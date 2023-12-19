@@ -57,16 +57,16 @@ function getProtocolAndDomain(url) {
 
 // Function to check the SSL certificate validity
 function checkCertificateValidity() {
-  const url = `https://check-ssl.p.rapidapi.com/sslcheck?domain=${dom}`;
+  const sslUrl = `https://check-ssl.p.rapidapi.com/sslcheck?domain=${dom}`;
   const options = {
     method: 'GET',
     headers: {
-      'X-RapidAPI-Key': 'your-api-key',
+      'X-RapidAPI-Key': 'a17b0e6e48msh3daae5ea2045e44p1611d1jsn3184f71cf709',
       'X-RapidAPI-Host': 'check-ssl.p.rapidapi.com'
     }
   };
 
-  return fetch(url, options)
+  return fetch(sslUrl, options)
     .then(response => response.json())
     .then(result => {
       console.log(result);
@@ -83,44 +83,87 @@ function checkCertificateValidity() {
     });
 }
 
+// Function using Google's safe browsing API
+function isGoogleSafe(url) {
+  const apiSafeBrowseKey = 'AIzaSyCLqzT5iLZImfh4LU6yS8l3GMvLnCY_or8';
+  const safeBrowseUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiSafeBrowseKey}`;
+  const safeBrowsingOptions = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      client: {
+        clientId: 'detection-extension',
+        clientVersion: '1.5.2',
+      },
+      threatInfo: {
+        threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE', 'POTENTIALLY_HARMFUL_APPLICATION'],
+        platformTypes: ['ANY_PLATFORM'],
+        threatEntryTypes: ['URL'],
+        threatEntries: [{ 'url': url }],
+      },
+    }),
+  };
+  
+  return fetch(safeBrowseUrl, safeBrowsingOptions)
+    .then(response => response.json())
+    .then(result => {
+      console.log(result);
+
+      if (result.matches && result.matches.length > 0) {
+        return '<span class="malicious">flagged by Google Safe Browsing</span>';
+      } else {
+        return '<span class="good">Google Safe Browsing approved</span>';
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      return '<span class="error">Error checking certificate</span>';
+    });
+}
+
 // Function to get the URL and perform checks
-function getURL() {
-  browser.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    var url = tabs[0].url;
-    var { protocol, domain } = getProtocolAndDomain(url);
+async function getURL(url) {
+  try {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true });
+    const url = tabs[0].url;
+    const { protocol, domain } = getProtocolAndDomain(url);
     dom = domain;
     document.getElementById("url").innerHTML = "Domain: " + domain;
-
-    // Check if the URL uses HTTPS
+    
     let comments = [];
-    comments.push('Analysis')
+    comments.push('Analysis');
     if (protocol === 'https') {
-      // Check for malicious domain based on additional criteria
       comments.push(isMaliciousDomain(domain));
-
-      // Check for homograph attack
       const punycodeDomain = punycode.toASCII(domain);
       comments.push(homographCheck(domain, punycodeDomain));
-
-      // Check the top-level domain
       comments.push(checkTopLevelDomain(domain));
 
-      // adds https validity comment 
+      try {
+        const safeBrowsingComment = await isGoogleSafe(url);
+        comments.push(safeBrowsingComment);
+      } catch (err) {
+        comments.push('<span class="error">Error checking Google Safe Browsing</span>');
+        console.error(err);
+      }
+
       comments.push('<span class="good">secure connection</span>');
     } else {
       comments.push('<span class="warning">insecure connection (HTTP)</span>');
     }
 
-    // Display accumulated comments with HTML spans
     document.getElementById("comment").innerHTML = comments.join('<br>');
     document.getElementById("url").style.color = "#2f3330";
-  });
+  } catch (error) {
+    console.error('Error in getURL:', error);
+  }
 }
 
 // Event listener for the button click
-document.getElementById("checkBTN").addEventListener("click", function() {
+document.getElementById('checkBTN').addEventListener('click', function () {
   checkCertificateValidity().then(comment => {
-    document.getElementById("comment").innerHTML = comment.replace(/\n/g, '<br>');
+    document.getElementById('comment').innerHTML = comment.replace(/\n/g, '<br>');
   });
 });
 getURL();

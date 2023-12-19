@@ -2,7 +2,7 @@
   "name": "Safe Site",
   "version": "1.0",
   "description": "Is this website fake?",
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "webNavigation", "notifications", "https://safebrowsing.googleapis.com/", "https://cdnjs.cloudflare.com/"],
   "browser_action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -17,6 +17,13 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "web_accessible_resources": [
+    "libs/punycode.min.js"
   ],
   "content_security_policy": "script-src 'self' https://cdnjs.cloudflare.com; object-src 'self'; style-src 'self'; font-src 'self'"
 }
